@@ -44,7 +44,7 @@ app.get("/users", async (req: Request, res: Response) => {
       {
         $sort: {
           redFlags: -1,
-          id: -1
+          _id: -1
         }
       },
       {
@@ -64,12 +64,12 @@ app.get("/users", async (req: Request, res: Response) => {
   let hasNext = false
   const users = await user.aggregate([
     {
-      $match: { $or: [{ id: { $lt: new mongoose.Types.ObjectId(id) }, redFlags: redFlag }, { redFlags: { $lt: redFlag } }] },
+      $match: { $or: [{ _id: { $lt: new mongoose.Types.ObjectId(id) }, redFlags: redFlag }, { redFlags: { $lt: redFlag } }] },
     },
     {
       $sort: {
         redFlags: -1,
-        id: -1
+        _id: -1
       }
     },
     {
