@@ -32,6 +32,60 @@ app.use(cors())
 
 app.get("/", (_req: Request, res: Response) => res.json({ message: "hello world! welcome to red flag" }))
 
+
+
+app.get("/users", async (req: Request, res: Response) => {
+  const id = req.query.id
+  const flag = req.query.flag
+  const limit = 5
+  if (!flag) {
+    let hasNext = false
+    const users = await user.aggregate([
+      {
+        $sort: {
+          redFlags: -1,
+          id: -1
+        }
+      },
+      {
+        $limit: limit + 1
+      }
+    ])
+    if (users[limit]) {
+      hasNext = true
+      users.pop()
+    }
+    return res.json({ users, hasNext })
+  }
+  if (typeof id != "string") return res.status(400).json({ message: "id not found" })
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "invalid id" })
+  const redFlag = Number(flag)
+  if (Number.isNaN(redFlag)) return res.status(400).json({ message: "invalid flag" })
+  let hasNext = false
+  const users = await user.aggregate([
+    {
+      $match: { $or: [{ id: { $lt: new mongoose.Types.ObjectId(id) }, redFlags: redFlag }, { redFlags: { $lt: redFlag } }] },
+    },
+    {
+      $sort: {
+        redFlags: -1,
+        id: -1
+      }
+    },
+    {
+      $limit: limit + 1
+    }
+  ])
+  if (users[limit]) {
+    hasNext = true
+    users.pop()
+  }
+  return res.json({ users, hasNext })
+})
+
+
+
+
 app.post("/user/add", async (req: Request, res: Response) => {
   const username = req.body?.username;
   const name = req.body?.name;
@@ -40,7 +94,7 @@ app.post("/user/add", async (req: Request, res: Response) => {
   if (oldUser) return res.status(400).json({ message: "user already exits", username })
   const url = `https://www.instagram.com/${username}/`
   cluster.queue(async ({ page }: { page: Page }) => {
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.goto(url, { waitUntil: 'networkidle0' });
     const imageUrl = await page.evaluate(() => {
       const image = document.querySelector("img")
       return image?.src
@@ -48,8 +102,8 @@ app.post("/user/add", async (req: Request, res: Response) => {
     if (!imageUrl) return res.status(404).json({ message: "instagram profile not found" })
     const newUser = new user({ name, username, imageUrl })
     await newUser.save()
+    res.json({ message: "success", newUser })
   });
-  res.json({ message: "success", })
 })
 
 app.get("/user/:username", async (req: Request, res: Response) => {
@@ -59,10 +113,40 @@ app.get("/user/:username", async (req: Request, res: Response) => {
 })
 
 
-// app.get("/user/search/:name", (req: Request, res: Response) => {
-//   const name = req.params.name
-// })
-//
+app.get("/user/search/:name", async (req: Request, res: Response) => {
+  const name = req.params.name
+  const users = await user.aggregate([
+    {
+      $search: {
+        index: "default",
+        autocomplete: {
+          query: name,
+          path: "name",
+          fuzzy: {
+            maxEdits: 2,
+            prefixLength: 2,
+          }
+        }
+      }
+    },
+    {
+      $addFields: {
+        searchScore: { $meta: "searchScore" }
+      }
+    },
+    {
+      $sort: {
+        searchScore: -1,
+        redFlags: -1
+      }
+    },
+    {
+      $limit: 10
+    }
+  ])
+  res.json({ users })
+})
+
 
 app.patch("/user/redflag/:username", async (req: Request, res: Response) => {
   const username = req.params.username
@@ -79,44 +163,6 @@ app.patch("/user/greenFlag/:username", async (req: Request, res: Response) => {
 })
 
 
-
-app.get("/users", async (req: Request, res: Response) => {
-  const cursor = req.query.cursor
-  if (!cursor) {
-    let hasNext = false
-    const users = await user.aggregate([
-      {
-        $sort: { "createdAt": 1 }
-      },
-      {
-        $limit: 11
-      }
-    ])
-    if (users[10]) {
-      hasNext = true
-      users.pop()
-    }
-    return res.json({ users, hasNext })
-  } else {
-    let hasNext = false
-    const users = await user.aggregate([
-      {
-        $match: { _id: { $gt: cursor } }
-      },
-      {
-        $sort: { "createdAt": 1 }
-      },
-      {
-        $limit: 11
-      }
-    ])
-    if (users[10]) {
-      hasNext = true
-      users.pop()
-    }
-    return res.json({ users, hasNext })
-  }
-})
 
 
 app.use(errHandler)
