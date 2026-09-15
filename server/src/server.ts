@@ -7,7 +7,7 @@ import cors from "cors"
 import { Cluster } from "puppeteer-cluster"
 import { Page } from "puppeteer"
 import user from "./model/user"
-
+import comment from "./routes/comment.routes"
 
 const cluster = await Cluster.launch({
   concurrency: Cluster.CONCURRENCY_PAGE,
@@ -37,7 +37,7 @@ app.get("/", (_req: Request, res: Response) => res.json({ message: "hello world!
 app.get("/users", async (req: Request, res: Response) => {
   const id = req.query.id
   const flag = req.query.flag
-  const limit = 5
+  const limit = 15
   if (!flag) {
     let hasNext = false
     const users = await user.aggregate([
@@ -163,8 +163,7 @@ app.patch("/user/greenFlag/:username", async (req: Request, res: Response) => {
 })
 
 
-
-
+app.use("/comments", comment)
 app.use(errHandler)
 
 app.listen(3000, () => console.log("Server on port 3000"))
