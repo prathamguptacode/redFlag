@@ -8,6 +8,10 @@ import { Cluster } from "puppeteer-cluster"
 import { Page } from "puppeteer"
 import user from "./model/user"
 import comment from "./routes/comment.routes"
+import cookieParser from "cookie-parser"
+import token from "./routes/token.routes"
+import jwt, { JwtPayload } from "jsonwebtoken"
+import anonymus from "./model/anonymus"
 
 const cluster = await Cluster.launch({
   concurrency: Cluster.CONCURRENCY_PAGE,
@@ -28,7 +32,11 @@ mongoose.connect(env.DB_URL).then(() => console.log("Connected to DB")).catch(()
 const app = express()
 
 app.use(express.json())
-app.use(cors())
+app.use(cookieParser())
+app.use(cors({
+  origin: [env.CLIENT_URL],
+  credentials: true
+}))
 
 app.get("/", (_req: Request, res: Response) => res.json({ message: "hello world! welcome to red flag" }))
 
@@ -109,6 +117,7 @@ app.post("/user/add", async (req: Request, res: Response) => {
 app.get("/user/:username", async (req: Request, res: Response) => {
   const username = req.params.username
   const oldUser = await user.findOne({ username })
+  if (!oldUser) return res.status(404).json({ message: "user not found" })
   res.json({ user: oldUser })
 })
 
@@ -149,21 +158,53 @@ app.get("/user/search/:name", async (req: Request, res: Response) => {
 
 
 app.patch("/user/redflag/:username", async (req: Request, res: Response) => {
+  const token = req.cookies.token
+  if (!token) return res.status(400).json({ message: "access token not found" })
+  let id = ""
+  try {
+    const decode = jwt.verify(token, env.TOKEN_SECRET) as JwtPayload
+    id = decode.id
+  } catch (error) {
+    res.clearCookie("token")
+    return res.status(400).json({ message: "Something went wrong in token" })
+  }
   const username = req.params.username
+  if (typeof username != "string") return res.status(400).json({ message: "invalid" })
+  const votedUsernames = await anonymus.findById(id).select("redFlags")
+  if (votedUsernames?.redFlags.includes(username)) return res.status(403).json({ message: "already voted" })
   const myUserUpdate = await user.updateOne({ username }, { $inc: { redFlags: 1 } })
   if (myUserUpdate.modifiedCount == 0) return res.status(404).json({ message: "user not found" })
+  await anonymus.updateOne({ _id: id }, { $push: { redFlags: username } })
   return res.json({ message: "updated", username })
 })
 
 app.patch("/user/greenFlag/:username", async (req: Request, res: Response) => {
+  const token = req.cookies.token
+  if (!token) return res.status(400).json({ message: "access token not found" })
+  let id = ""
+  try {
+    const decode = jwt.verify(token, env.TOKEN_SECRET) as JwtPayload
+    id = decode.id
+  } catch (error) {
+    res.clearCookie("token")
+    return res.status(400).json({ message: "Something went wrong in token" })
+  }
   const username = req.params.username
+  if (typeof username != "string") return res.status(400).json({ message: "invalid" })
+  const votedUsernames = await anonymus.findById(id).select("greenFlags")
+  if (votedUsernames?.greenFlags.includes(username)) return res.status(403).json({ message: "already voted" })
   const myUserUpdate = await user.updateOne({ username }, { $inc: { greenFlags: 1 } })
   if (myUserUpdate.modifiedCount == 0) return res.status(404).json({ message: "user not found" })
+  await anonymus.updateOne({ _id: id }, { $push: { greenFlags: username } })
   return res.json({ message: "updated", username })
 })
 
 
 app.use("/comments", comment)
+
+app.use("/token", token)
+
+
 app.use(errHandler)
 
 app.listen(3000, () => console.log("Server on port 3000"))
