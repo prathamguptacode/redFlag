@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Form from './pages/Form';
 import Err from './pages/Err';
+import { Toaster } from './components/ui/Sonner';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
         <Route path='/contribute' element={<Form />} />
         <Route path='*' element={<Err />} />
       </Routes>
+      <Toaster />
     </BrowserRouter>
   )
 }
