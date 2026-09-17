@@ -41,6 +41,7 @@ export default function Form() {
       setLoader(true)
       const res = await api.post("/user/add", { name, username })
       setLoader(false)
+      toast.success("User added successfully", { position: "top-center" })
       navigate("/profile")
     } catch (error) {
       setLoader(false)
