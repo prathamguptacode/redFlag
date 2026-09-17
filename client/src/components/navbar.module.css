@@ -1,0 +1,93 @@
+.navbar {
+  display: flex;
+  padding: 12px 24px;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #000;
+  gap: 40px;
+}
+
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.logo {
+  font-weight: 700;
+  font-size: 24px;
+  /* color: #ffdb33; */
+  /* text-shadow: 2px 2px #000000; */
+}
+
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  anchor-name: --searchBox;
+}
+
+
+.btnContent {
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.pop:popover-open {
+  position: absolute;
+  position-anchor: --searchBox;
+  top: anchor(bottom);
+  left: anchor(left);
+  width: anchor-size(--searchBox width);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 2px solid black;
+  box-shadow: 2px 2px black;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.opt {
+  padding: 4px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.opt:focus {
+  background-color: hsl(0, 0%, 89%);
+}
+
+.opt:hover {
+  background-color: hsl(0, 0%, 89%);
+}
+
+
+.closeBtn {
+  position: absolute;
+  z-index: 3;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+@media (width < 768px) {
+  .logoBox {
+    display: none;
+  }
+
+  .btnContent>div {
+    display: none;
+  }
+
+  .navbar {
+    gap: 24px;
+  }
+}
