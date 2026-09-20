@@ -45,7 +45,7 @@ app.get("/", (_req: Request, res: Response) => res.json({ message: "hello world!
 app.get("/users", async (req: Request, res: Response) => {
   const id = req.query.id
   const flag = req.query.flag
-  const limit = 15
+  const limit = 4
   if (!flag) {
     let hasNext = false
     const users = await user.aggregate([

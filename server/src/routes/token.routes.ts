@@ -20,7 +20,7 @@ router.get("/data", async (req: Request, res: Response) => {
     const decode = jwt.verify(token, env.TOKEN_SECRET) as JwtPayload
     const id = decode.id
     const myAnonymus = await anonymus.findById(id)
-    return res.json({ redFlags: myAnonymus?.redFlags, greenFlags: myAnonymus?.greenFlags })
+    return res.json({ redFlags: myAnonymus?.redFlags, greenFlags: myAnonymus?.greenFlags, likedComments: myAnonymus?.likedComments })
   } catch (error) {
     res.clearCookie("token")
     return res.status(400).json({ message: "Something went wrong in token" })

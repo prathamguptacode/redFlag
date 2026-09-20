@@ -27,8 +27,12 @@ export default function Form() {
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [loader, setLoader] = useState(false)
-  const [not, setNot] = useState(false)
+  const [not, setNot] = useState("")
   const navigate = useNavigate()
+
+
+
+
 
   async function handleClick() {
     if (!name) {
@@ -42,20 +46,24 @@ export default function Form() {
       const res = await api.post("/user/add", { name, username })
       setLoader(false)
       toast.success("User added successfully", { position: "top-center" })
-      navigate("/profile")
+      navigate(`/${res.data?.newUser.username}`)
     } catch (error) {
       setLoader(false)
       if (isAxiosError(error)) {
         if (error.response?.status == 404) {
-          return setNot(true)
+          return setNot("Instagram account not found?")
         }
         if (error.response?.data?.message == "user already exits") {
-          return toast.warning("User already exits", { position: "top-center" })
+          return setNot("User Profile already exits")
         }
       }
       return toast.error("Something went wrong", { position: "top-center", duration: 5000 })
     }
   }
+
+
+
+
 
   return (
     <div className="max-w-5xl h-screen flex justify-center items-center  mx-auto ">
@@ -97,28 +105,29 @@ export default function Form() {
       </div>
     </div >
   )
+
 }
 
 
 
 
 
-function AlertDialogDestructive({ open, setOpen }: { open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
+function AlertDialogDestructive({ open, setOpen }: { open: string, setOpen: React.Dispatch<React.SetStateAction<string>> }) {
   return (
-    <AlertDialog open={open}>
+    <AlertDialog open={open ? true : false}>
       <AlertDialogContent size="sm" className={"bg-background"}>
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive ">
             <UserRoundX />
           </AlertDialogMedia>
-          <AlertDialogTitle>Instagram account not found?</AlertDialogTitle>
+          <AlertDialogTitle>{open}</AlertDialogTitle>
           <AlertDialogDescription>
             Instagram Username is incorrect, please recheck the username and try again.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="bg-muted">
-          <AlertDialogCancel size={"sm"} variant="outline" onClick={() => setOpen(false)} >Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="default" onClick={() => setOpen(false)}>Retry</AlertDialogAction>
+          <AlertDialogCancel size={"sm"} variant="outline" onClick={() => setOpen("")} >Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="default" onClick={() => setOpen("")}>Retry</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

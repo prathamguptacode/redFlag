@@ -1,31 +1,106 @@
+import clsx from "clsx";
 import { Flag } from "lucide-react"
 import { Button } from "./ui/button"
 import { useNavigate } from "react-router-dom"
+import React, { useContext, useEffect, useState } from "react";
+import UserTokenContext from "../context/userToken";
+import api from "../api/api";
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
 
-function Userbar() {
-  const navigate = useNavigate()
+function Userbar({ _id, name, username, imageUrl, redFlags, greenFlags }: { _id: string, name: string, username: string, imageUrl: string, redFlags: number, greenFlags: number }) {
+
+
+  const navigate = useNavigate();
+  const userTokenData = useContext(UserTokenContext)
+  const [activeRed, setActiveRed] = useState(false)
+  const [activeGreen, setActiveGreen] = useState(false)
+  const [redF, setRedF] = useState(redFlags)
+  const [greenF, setGreenF] = useState(greenFlags)
+
+
+
+  useEffect(() => {
+    if (userTokenData?.userData.redFlags.includes(username)) {
+      setActiveRed(true)
+    }
+    if (userTokenData?.userData.greenFlags.includes(username)) {
+      setActiveGreen(true)
+    }
+  }, [userTokenData.userData])
+
+
+
+
+  async function handleRed(event: React.MouseEvent) {
+    event.stopPropagation()
+    setActiveRed(true)
+    userTokenData.setUserData(prev => {
+      const redF = [...prev.redFlags, username]
+      const data = prev
+      data.redFlags = redF
+      return data
+    })
+    try {
+      await api.patch(`/user/redflag/${username}`)
+      setRedF(prev => prev + 1)
+    } catch (error) {
+      if (isAxiosError(error)) {
+        if (error.response?.status == 403) {
+          return toast.warning(`Already voted to ${username}`, { position: "top-center", })
+        }
+      }
+      return toast.warning(`Something went wrong`, { position: "top-center" })
+    }
+  }
+
+  async function handleGreen(event: React.MouseEvent) {
+    event.stopPropagation()
+    setActiveGreen(true)
+    userTokenData.setUserData(prev => {
+      const greenF = [...prev.greenFlags, username]
+      const data = prev
+      data.greenFlags = greenF
+      return data
+    })
+    try {
+      await api.patch(`/user/greenflag/${username}`)
+      setGreenF(prev => prev + 1)
+    } catch (error) {
+      if (isAxiosError(error)) {
+        if (error.response?.status == 403) {
+          return toast.warning(`Already voted to ${username}`, { position: "top-center", })
+        }
+      }
+      return toast.warning(`Something went wrong`, { position: "top-center", })
+    }
+  }
+
+
+
+
   return (
 
-    <div className="bg-white border-2 shadow-[2px_2px_0px_black] p-6 " tabIndex={0} onClick={() => navigate("/profile")}>
+    <div className="bg-white border-2 shadow-[2px_2px_0px_black] p-6 " tabIndex={0} onClick={() => navigate(`/${username}`, { state: { _id, name, username, imageUrl, redFlags, greenFlags } })}>
       <div className="flex justify-between rounded-sm gap-4 ">
         <div className="shrink-0">
-          <img height={"150px"} width={"150px"} src="https://scontent-maa5-2.cdninstagram.com/v/t51.82787-19/651517551_18315721327281174_1419939779158868367_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=101&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=xc_zkGK8RKAQ7kNvwGxSraw&_nc_oc=Adpl-QQeQdGN1MVLuvC8F4_mYug2W_eqku87wpG89WZGTzvFkckLrHXm1zdn9EaBlCI&_nc_zt=24&_nc_ht=scontent-maa5-2.cdninstagram.com&_nc_gid=fMvuE8uMXL-mMWrPYuFliA&_nc_ss=7fa8c&oh=00_AQIr9YnOIiqxdS03-ezY70iD5zOn3mHwvStEVU3Q0618aQ&oe=6AAD77B4" className="rounded-sm" />
+          <img height={"150px"} width={"150px"} src={imageUrl} className="rounded-sm w-[150px] h-[150px]" />
         </div>
         <div className=" flex-1 relative flex flex-col flex-nowrap min-w-0">
-          <div className="font-semibold text-2xl whitespace-nowrap text-ellipsis overflow-hidden">Pratham Gupta</div>
-          <div className="text-muted-foreground whitespace-nowrap text-ellipsis overflow-hidden">pratham.xk</div>
+          <div className="font-semibold text-2xl whitespace-nowrap text-ellipsis overflow-hidden">{name}</div>
+          <div className="text-muted-foreground whitespace-nowrap text-ellipsis overflow-hidden">{username}</div>
           <div className="text-muted-foreground ellipseCan">Loves cat food and he is too fat</div>
           <div className=" gap-8 mt-auto hidden sm:flex">
-            <Button className="py-2 px-4 bg-redFlagColor hover:bg-redFlagColorActive"><Flag />(20) Red Flags </Button>
-            <Button className="py-2 px-4 bg-greenFlagColor hover:bg-greenFlagColorActive"> <Flag />(12) Green Flags </Button>
+            <Button onClick={handleRed} className={clsx("py-2 px-4 bg-redFlagColor hover:bg-redFlagColorActive", activeRed && "bg-redFlagColorActive")}><Flag />({redF}) Red Flags </Button>
+            <Button onClick={handleGreen} className={clsx("py-2 px-4 bg-greenFlagColor hover:bg-greenFlagColorActive", activeGreen && "bg-greenFlagColorActive")}> <Flag />({greenF}) Green Flags </Button>
           </div>
         </div>
       </div>
       <div className=" gap-4 mt-6 flex flex-col sm:hidden">
-        <Button className="py-2 px-4 bg-redFlagColor hover:bg-redFlagColorActive"><Flag />(20) Red Flags </Button>
-        <Button className="py-2 px-4 bg-greenFlagColor hover:bg-greenFlagColorActive"> <Flag />(12) Green Flags </Button>
+        <Button onClick={handleRed} className={clsx(" py-2 px-4 bg-redFlagColor hover:bg-redFlagColorActive", activeRed && "bg-redFlagColorActive")}><Flag />({redF}) Red Flags </Button>
+        <Button onClick={handleGreen} className={clsx("py-2 px-4 bg-greenFlagColor hover:bg-greenFlagColorActive", activeGreen && "bg-greenFlagColorActive")}> <Flag />({greenF}) Green Flags </Button>
       </div>
-    </div>
+    </div >
 
   )
 }

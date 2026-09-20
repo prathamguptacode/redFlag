@@ -63,6 +63,22 @@
   --greenFlagColor: #80EF8050;
   --redFlagColorActive: #FF645CED;
   --greenFlagColorActive: #80EF80DD;
+
+
+  /* Heart */
+  --like-heart: #f43f5e;
+
+  /* Burst */
+  --like-burst-ring: #fb7185;
+  --like-heart-outline: #000000;
+
+  /* Particles */
+  --like-particle-1: #f43f5e;
+  --like-particle-2: #fb923c;
+  --like-particle-3: #facc15;
+  --like-particle-4: #4ade80;
+  --like-particle-5: #38bdf8;
+  --like-particle-6: #a78bfa;
 }
 
 .dark {
@@ -84,6 +100,23 @@
   --border: #000;
   --input: #262320;
   --ring: #ffdc58;
+
+
+  /* Heart */
+  --like-heart: #fb7185;
+
+  --like-heart-outline: #ffffff;
+
+  /* Burst */
+  --like-burst-ring: #fb7185;
+
+  /* Particles */
+  --like-particle-1: #fb7185;
+  --like-particle-2: #fdba74;
+  --like-particle-3: #fde047;
+  --like-particle-4: #86efac;
+  --like-particle-5: #7dd3fc;
+  --like-particle-6: #c4b5fd;
 }
 
 body {

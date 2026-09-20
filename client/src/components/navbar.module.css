@@ -47,7 +47,7 @@
   width: anchor-size(--searchBox width);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
   border: 2px solid black;
   box-shadow: 2px 2px black;
   padding-top: 12px;
@@ -55,9 +55,10 @@
 }
 
 .opt {
-  padding: 4px;
-  padding-left: 12px;
-  padding-right: 12px;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .opt:focus {
