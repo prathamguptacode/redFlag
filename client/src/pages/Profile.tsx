@@ -1,4 +1,4 @@
-import { Flag, Heart, } from "lucide-react"
+import { Flag, } from "lucide-react"
 import Navbar from "../components/Navbar"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
@@ -156,7 +156,7 @@ function Profile() {
     if (inComment == "") {
       return toast.warning("Observation cannot be empty", { position: "top-center" })
     }
-    setComments(e => [...e, { likes: 0, content: inComment }])
+    setComments(e => [...e, { likes: 0, content: inComment, _id: "0" }])
     try {
       await api.post(`/comments/${profile._id}`, { content: inComment })
     } catch {
@@ -227,7 +227,7 @@ function Profile() {
                     <div>Anonymus:</div>
                     <div className="text-muted-foreground">{e.content}</div>
                   </div>
-                  <LikeButton className="px-1" _id={e._id} defaultLiked={userTokenData.userData.likedComments.includes(e._id)} />
+                  <LikeButton className="px-1" _id={e._id} defaultLiked={userTokenData.userData?.likedComments.includes(e._id)} />
                 </div>
 
               )

@@ -12,6 +12,7 @@ import cookieParser from "cookie-parser"
 import token from "./routes/token.routes"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import anonymus from "./model/anonymus"
+import { v2 as cloudinary } from "cloudinary"
 
 const cluster = await Cluster.launch({
   concurrency: Cluster.CONCURRENCY_PAGE,
@@ -26,6 +27,11 @@ const cluster = await Cluster.launch({
 })
 
 mongoose.connect(env.DB_URL).then(() => console.log("Connected to DB")).catch(() => console.log("Cannot connect to DB"))
+
+
+cloudinary.config({
+  secure: true
+});
 
 
 
@@ -108,7 +114,17 @@ app.post("/user/add", async (req: Request, res: Response) => {
       return image?.src
     })
     if (!imageUrl) return res.status(404).json({ message: "instagram profile not found" })
-    const newUser = new user({ name, username, imageUrl })
+
+    //save to cloudinary
+    let urlCloud = ""
+    try {
+      const result = await cloudinary.uploader.upload(imageUrl, { unique_filename: true, folder: "redFlags" });
+      urlCloud = result.secure_url
+    } catch (error) {
+      return res.status(500).json({ message: "Something went wrong" })
+    }
+
+    const newUser = new user({ name, username, imageUrl: urlCloud })
     await newUser.save()
     res.json({ message: "success", newUser })
   });

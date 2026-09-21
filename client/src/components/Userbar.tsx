@@ -21,10 +21,10 @@ function Userbar({ _id, name, username, imageUrl, redFlags, greenFlags }: { _id:
 
 
   useEffect(() => {
-    if (userTokenData?.userData.redFlags.includes(username)) {
+    if (userTokenData?.userData?.redFlags.includes(username)) {
       setActiveRed(true)
     }
-    if (userTokenData?.userData.greenFlags.includes(username)) {
+    if (userTokenData?.userData?.greenFlags.includes(username)) {
       setActiveGreen(true)
     }
   }, [userTokenData.userData])
