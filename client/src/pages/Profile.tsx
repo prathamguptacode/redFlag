@@ -200,11 +200,15 @@ function Profile() {
             <BarLoader color="#ffd12e" speedMultiplier={1.8} />
           </div>
 
-          <img height={"250px"} width={"250px"} src={profile?.imageUrl} className="rounded-sm object-cover mx-auto h-[250px] w-[250px]" />
+          <a target="_blank" href={profile?.imageUrl}>
+            <img height={"250px"} width={"250px"} src={profile?.imageUrl} className="rounded-sm object-cover mx-auto h-[250px] w-[250px]" />
+          </a>
 
           <div>
             <div className="font-semibold text-2xl text-center">{profile?.name}</div>
-            <div className="text-muted-foreground text-center">{profile?.username}</div>
+            <a href={`https://instagram.com/${profile?.username}`}>
+              <div className="text-muted-foreground text-center">{profile?.username}</div>
+            </a>
           </div>
 
           <div className=" self-center flex gap-12">
