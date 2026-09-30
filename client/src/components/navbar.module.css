@@ -89,6 +89,7 @@
   }
 
   .navbar {
-    gap: 24px;
+    gap: 16px;
+    padding: 12px 10px;
   }
 }

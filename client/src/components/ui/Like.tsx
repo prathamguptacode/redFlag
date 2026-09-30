@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useRef, useState } from "react"
+import { useCallback, useContext, useRef, useState } from "react"
 import {
   motion,
   useReducedMotion,
@@ -138,7 +138,7 @@ export function LikeButton({
       onClick={async () => {
         handleClick()
         if (_id != "0") {
-          userTokenData.setUserData(prev => {
+          userTokenData?.setUserData(prev => {
             const likeBtn = prev.likedComments
             const data = prev
             data.likedComments = [...likeBtn, _id]

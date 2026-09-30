@@ -87,16 +87,22 @@ function Profile() {
   async function handleRed() {
     setActiveRed(true)
     setProfile(prev => {
-      const redF = prev.redFlags + 1
-      const data = prev
-      data.redFlags = redF
-      return data
+      if (prev) {
+        const redF = prev.redFlags + 1
+        const data = prev
+        data.redFlags = redF
+        return data
+      }
+      return null
     })
-    userTokenData.setUserData(prev => {
-      const redF = [...prev.redFlags, username]
-      const data = prev
-      data.redFlags = redF
-      return data
+    userTokenData?.setUserData(prev => {
+      if (username) {
+        const redF = [...prev.redFlags, username]
+        const data = prev
+        data.redFlags = redF
+        return data
+      }
+      return prev
     })
     try {
       await api.patch(`/user/redflag/${username}`)
@@ -114,16 +120,22 @@ function Profile() {
   async function handleGreen() {
     setActiveGreen(true)
     setProfile(prev => {
-      const greenF = prev.greenFlags + 1
-      const data = prev
-      data.greenFlags = greenF
-      return data
+      if (prev) {
+        const greenF = prev.greenFlags + 1
+        const data = prev
+        data.greenFlags = greenF
+        return data
+      }
+      return null
     })
-    userTokenData.setUserData(prev => {
-      const greenF = [...prev.greenFlags, username]
-      const data = prev
-      data.greenFlags = greenF
-      return data
+    userTokenData?.setUserData(prev => {
+      if (username) {
+        const greenF = [...prev.greenFlags, username]
+        const data = prev
+        data.greenFlags = greenF
+        return data
+      }
+      return prev
     })
     try {
       await api.patch(`/user/greenflag/${username}`)
@@ -138,14 +150,17 @@ function Profile() {
   }
 
   const userTokenData = useContext(UserTokenContext)
+
   useEffect(() => {
-    if (userTokenData?.userData?.redFlags.includes(username)) {
-      setActiveRed(true)
+    if (userTokenData?.userData && username) {
+      if (userTokenData?.userData?.redFlags.includes(username)) {
+        setActiveRed(true)
+      }
+      if (userTokenData?.userData?.greenFlags.includes(username)) {
+        setActiveGreen(true)
+      }
     }
-    if (userTokenData?.userData?.greenFlags.includes(username)) {
-      setActiveGreen(true)
-    }
-  }, [userTokenData.userData])
+  }, [userTokenData?.userData, username])
 
 
 
@@ -156,11 +171,18 @@ function Profile() {
     if (inComment == "") {
       return toast.warning("Observation cannot be empty", { position: "top-center" })
     }
-    setComments(e => [...e, { likes: 0, content: inComment, _id: "0" }])
-    try {
-      await api.post(`/comments/${profile._id}`, { content: inComment })
-    } catch {
-      return toast.warning("Something went wrong", { position: "top-center" })
+    setComments(e => {
+      if (e) {
+        return [...e, { likes: 0, content: inComment, _id: "0" }]
+      }
+      return [{ likes: 0, content: inComment, _id: "0" }]
+    })
+    if (profile) {
+      try {
+        await api.post(`/comments/${profile._id}`, { content: inComment })
+      } catch {
+        return toast.warning("Something went wrong", { position: "top-center" })
+      }
     }
   }
 
@@ -171,8 +193,8 @@ function Profile() {
   return (
     <div >
       <Navbar />
-      <div className="px-4">
-        <div className="relative border-3 border-black shadow-[6px_6px_0px_black]  max-w-2xl mx-auto my-6  p-6 flex flex-col gap-4 ">
+      <div className="px-2 md:px-4">
+        <div className="shadow-[4px_4px_0px_black] relative border-3 border-black md:shadow-[6px_6px_0px_black]  max-w-2xl mx-auto my-6  p-6 flex flex-col gap-4 ">
 
           <div className="absolute top-0 left-0 w-full h-full bg-background justify-center items-center" style={{ display: profileLoader ? "flex" : "none" }}>
             <BarLoader color="#ffd12e" speedMultiplier={1.8} />
@@ -203,7 +225,7 @@ function Profile() {
 
         </div>
 
-        <div className="border-3 border-black shadow-[6px_6px_0px_black]  max-w-2xl mx-auto my-6 p-6 flex flex-col gap-4 ">
+        <div className="shadow-[4px_4px_0px_black] border-3 border-black md:shadow-[6px_6px_0px_black]  max-w-2xl mx-auto my-6 p-6 flex flex-col gap-4 ">
           <div className="flex gap-4 mb-6">
             <Input placeholder="Write your observations..." value={inComment} onChange={e => setInComment(e.currentTarget.value)} />
             <Button onClick={addComment}>Add</Button>
@@ -227,7 +249,7 @@ function Profile() {
                     <div>Anonymus:</div>
                     <div className="text-muted-foreground">{e.content}</div>
                   </div>
-                  <LikeButton className="px-1" _id={e._id} defaultLiked={userTokenData.userData?.likedComments.includes(e._id)} />
+                  <LikeButton className="px-1" _id={e._id} defaultLiked={userTokenData?.userData?.likedComments.includes(e._id)} />
                 </div>
 
               )

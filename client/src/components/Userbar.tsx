@@ -27,7 +27,7 @@ function Userbar({ _id, name, username, imageUrl, redFlags, greenFlags }: { _id:
     if (userTokenData?.userData?.greenFlags.includes(username)) {
       setActiveGreen(true)
     }
-  }, [userTokenData.userData])
+  }, [userTokenData?.userData,username])
 
 
 
@@ -35,7 +35,7 @@ function Userbar({ _id, name, username, imageUrl, redFlags, greenFlags }: { _id:
   async function handleRed(event: React.MouseEvent) {
     event.stopPropagation()
     setActiveRed(true)
-    userTokenData.setUserData(prev => {
+    userTokenData?.setUserData(prev => {
       const redF = [...prev.redFlags, username]
       const data = prev
       data.redFlags = redF
@@ -57,7 +57,7 @@ function Userbar({ _id, name, username, imageUrl, redFlags, greenFlags }: { _id:
   async function handleGreen(event: React.MouseEvent) {
     event.stopPropagation()
     setActiveGreen(true)
-    userTokenData.setUserData(prev => {
+    userTokenData?.setUserData(prev => {
       const greenF = [...prev.greenFlags, username]
       const data = prev
       data.greenFlags = greenF

@@ -78,7 +78,7 @@ function Home() {
         <BarLoader color="#ffd12e" speedMultiplier={1.8} />
       </div>
 
-      <div className="flex flex-col gap-4 p-4 ">
+      <div className="flex flex-col gap-4 px-2 py-4 md:p-4 ">
         {
           users.map((e, i) => {
             if (i == users.length - 3) {

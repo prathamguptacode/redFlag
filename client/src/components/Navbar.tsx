@@ -41,7 +41,7 @@ function Navbar() {
     }
   }, [query])
 
-  const ref = useRef<HTMLElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     window.addEventListener("click", (e) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -108,13 +108,14 @@ function Navbar() {
           }
         </div>
       </div>
-      <div>
+      <div className='fixed z-100 bottom-4 right-4 md:relative md:bottom-0 md:right-0'>
         <Button className='py-3 md:py-2' onClick={() => navigate("/contribute")}>
           <div className={mystyle.btnContent}>
             <div>Contribute</div> <UserRoundPlus size={17} />
           </div>
         </Button>
       </div>
+
     </div >
   )
 }
