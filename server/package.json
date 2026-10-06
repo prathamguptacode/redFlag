@@ -20,7 +20,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.0",
     "puppeteer": "^25.10.0",
-    "puppeteer-cluster": "^0.25.0"
+    "puppeteer-cluster": "^0.25.0",
+    "tsc-alias": "^1.9.7"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
