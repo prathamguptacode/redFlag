@@ -28,7 +28,7 @@ function App() {
       } catch (error) {
         if (isAxiosError(error)) {
           if (error.response?.status == 400) {
-            await api.get("http://localhost:3000/token/new")
+            await api.get("/token/new")
           }
         }
       }
