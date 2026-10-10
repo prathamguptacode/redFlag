@@ -40,7 +40,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: [env.CLIENT_URL],
+  origin: [env.CLIENT_URL, "http://localhost:5173"],
   credentials: true
 }))
 
@@ -55,6 +55,9 @@ app.get("/users", async (req: Request, res: Response) => {
   if (!flag) {
     let hasNext = false
     const users = await user.aggregate([
+      {
+        $match: { display: true }
+      },
       {
         $sort: {
           redFlags: -1,
@@ -77,6 +80,9 @@ app.get("/users", async (req: Request, res: Response) => {
   if (Number.isNaN(redFlag)) return res.status(400).json({ message: "invalid flag" })
   let hasNext = false
   const users = await user.aggregate([
+    {
+      $match: { display: true }
+    },
     {
       $match: { $or: [{ _id: { $lt: new mongoose.Types.ObjectId(id) }, redFlags: redFlag }, { redFlags: { $lt: redFlag } }] },
     },
@@ -162,7 +168,6 @@ app.get("/user/search/:name", async (req: Request, res: Response) => {
     {
       $sort: {
         searchScore: -1,
-        redFlags: -1
       }
     },
     {
@@ -191,6 +196,7 @@ app.patch("/user/redflag/:username", async (req: Request, res: Response) => {
   const myUserUpdate = await user.updateOne({ username }, { $inc: { redFlags: 1 } })
   if (myUserUpdate.modifiedCount == 0) return res.status(404).json({ message: "user not found" })
   await anonymus.updateOne({ _id: id }, { $push: { redFlags: username } })
+  await user.updateOne({ username }, { display: true })
   return res.json({ message: "updated", username })
 })
 
@@ -212,6 +218,7 @@ app.patch("/user/greenFlag/:username", async (req: Request, res: Response) => {
   const myUserUpdate = await user.updateOne({ username }, { $inc: { greenFlags: 1 } })
   if (myUserUpdate.modifiedCount == 0) return res.status(404).json({ message: "user not found" })
   await anonymus.updateOne({ _id: id }, { $push: { greenFlags: username } })
+  await user.updateOne({ username }, { display: true })
   return res.json({ message: "updated", username })
 })
 
@@ -219,6 +226,88 @@ app.patch("/user/greenFlag/:username", async (req: Request, res: Response) => {
 app.use("/comments", comment)
 
 app.use("/token", token)
+
+
+
+
+
+
+
+
+
+
+
+
+app.get("/facesmash/users", async (req: Request, res: Response) => {
+  const id = req.query.id
+  const flag = req.query.flag
+  const nonId = req.query.nonid
+  const limit = 1
+  if (!flag) {
+    let hasNext = false
+    const users = await user.aggregate([
+      {
+        $sort: {
+          redFlags: -1,
+          _id: -1
+        }
+      },
+      {
+        $limit: 2 + 1
+      }
+    ])
+    if (users[limit]) {
+      hasNext = true
+      users.pop()
+    }
+    return res.json({ users, hasNext })
+  }
+  if (typeof id != "string") return res.status(400).json({ message: "id not found" })
+  if (typeof nonId != "string") return res.status(400).json({ message: "noid not found" })
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "invalid id" })
+  if (!mongoose.Types.ObjectId.isValid(nonId)) return res.status(400).json({ message: "invalid noid" })
+  const redFlag = Number(flag)
+  if (Number.isNaN(redFlag)) return res.status(400).json({ message: "invalid flag" })
+  let hasNext = false
+  const users = await user.aggregate([
+    {
+      $match: {
+        _id: { $ne: new mongoose.Types.ObjectId(nonId) }
+      }
+    },
+    {
+      $match: { $or: [{ _id: { $lt: new mongoose.Types.ObjectId(id) }, redFlags: redFlag }, { redFlags: { $lt: redFlag } }] },
+    },
+    {
+      $sort: {
+        redFlags: -1,
+        _id: -1
+      }
+    },
+    {
+      $limit: limit + 1
+    }
+  ])
+  if (users[limit]) {
+    hasNext = true
+    users.pop()
+  }
+  return res.json({ users, hasNext })
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 app.use(errHandler)
